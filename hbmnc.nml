@@ -1,0 +1,53 @@
+&nc_options
+
+  ncformat       = 'nc4'
+  nczip          = .true.
+
+/
+
+&dim_atts
+
+  lat_name           = 'lat'
+  lat_standard_name  = 'latitude'
+  lat_long_name      = 'latitude'
+  lat_units          = 'degrees_north'
+  lat_axis           = 'y'
+
+  lon_name           = 'lon'
+  lon_standard_name  = 'longitude'
+  lon_long_name      = 'longitude'
+  lon_units          = 'degrees_east'
+  lon_axis           = 'x'
+
+  dep_name           = 'depth'
+  dep_standard_name  = 'depth'
+  dep_long_name      = 'depth'
+  dep_units          = 'm'
+  dep_unit_long      = 'meters'
+  dep_axis           = 'z'
+  dep_positive       = 'down'
+
+  time_name          = 'time'
+  time_standard_name = 'time'
+  time_units         = 'days since 1900-01-01 00:00:00'
+  time_calendar      = 'proleptic_gregorian'
+  time_long_name     = 'time'
+  time_axis          = 't'
+  time_CoordinateAxisType = 'Time'
+
+/
+
+&globatt
+
+  title           = 'HBM 3D ocean model restart file'
+  institution     = 'DMI'
+  references      = 'http://www.dmi.dk'
+  contact         = 'vifr@dmi.dk'
+  source          = 'HBM model output'
+  Conventions     = 'CF-1.0'
+  history         = 'Model output files converted to NetCDF4 zipped format'
+  comment         = 'Data is horizontally on model native (staggered) grid, vertically destaggered'
+  grid_resolution = '? nautical miles'
+
+/&end
+
