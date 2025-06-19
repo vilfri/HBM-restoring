@@ -1,0 +1,27 @@
+&restart_options
+  restart_file   = 'restart_BSH.2017110100'
+  restart_out    = 'initial.bin'
+  read_restart   = .true.
+  create_nc      = .true.
+  nc_sname       = 'domain_'
+  names3d        = 'uvel  ','vvel  ','so    ','thetao','tke   ','diss  ','avv   '
+  nc_3d          = 1       ,1       ,1       ,1       ,1       ,1       ,1
+  names2d        = 'z     ','icet  ','icec  ','ice3  ','tsnei ','ueis  ','veis  ','tsoil ','iota  ' 
+  nc_2d          = 1       ,1       ,1       ,1       ,0       ,0       ,0       ,1       ,0
+  nc_domains     = 1, 1, 1
+  mod_restart    = .false.
+  mod_arxive     = .true.
+  mod_fname_1    = '/net/isilon/ifs/arch/home/jis/CMEMS_MYP/'
+  mod_fname_2    = '/BALTICSEA_MULTIYEAR_PHY_003_011-TDS_'
+  mod_fname_3    = '.nc','.nc','.nc'
+  mod_domains    = 0, 1, 0
+  mod_3dparams   = 0       ,0       ,1       ,1       ,0       ,0       ,0
+  mod_2dparams   = 0       ,0       ,0       ,0       ,0       ,0       ,0       ,0       ,0
+  mod_mindep     = 50.
+  mod_change     = 0.5
+  time_default   = 'V201411.300'
+  iotamodel      = .true.
+  sfill          = 12.
+  tfill          = 4.
+/
+
