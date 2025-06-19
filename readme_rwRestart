@@ -1,0 +1,55 @@
+The utility "rwRestart" is able to read and write HBM restart (new version) files, save restart file to NetCDF files, generate restart file from a NetCDF files, modify existing restart file by NetCDF files, and interpolate restart file of one HBM setup to another one. The desired transformation has to be written in namelist file. The program is is intended to run in running directory of HBM setup.
+The tasks that can be done with this utility are:
+1) simple output of restart file to NetCDF with desired list from 7 3d variables and 13 2d variables in desired set of domains.
+2) create restart file from scratch by interpolating of a NetCDF files.
+3) modify restart file by the data NetCDF files
+4) interpolate restart file of one HBM setup to another HBM setup. For this reason run the program in old HBM run directory requesting full output to NetCDF of all domains, and then run the program in new HBM run directory requesting full read (interpolation) of the NetCDF files.
+The program is written in Fortran. It requires fortran NetCDF library.
+Compilation is possible with
+> gfortran -I/home/vifr/local/include -L/home/vifr/local/lib  rwRestart.f90 -o rwRestart -lnetcdff -lnetcdf
+where the location of netcdf library should be specified.
+The program should be executed in run directory of HBM model, so that all HBM cfg, data, index and grid files are automatically available. It is necessary to add "hbmnc.nml" file to the run directory in order to run the "rwRestart" utility. And also namelist file of "rwRestart" utility should be provided. NetCDF library should be either in the path or execute the following command before running the utility:
+> export LD_LIBRARY_PATH=/home/vifr/local/lib
+with the actual location of the NetCDF library.
+ The the program is executed by running:
+> path_to_rwRestart/rwRestart my_rwRestart.nml
+where "my_rwRestart.nml" is some namelist file with "rwRestart" options. 
+
+Namelist parameters (with example):
+
+&restart_options
+  restart_file   = 'restart'                         ! input restart filename in current HBM run directory
+  restart_out    = 'restart_out'                     ! output restart filename in current HBM run directory
+  read_restart   = .true.                            ! if to read restart
+  create_nc      = .true.                            ! if to create NetCDF output
+  nc_sname       = 'domain_'                         ! first part of filename of created NetCDF files for each domain
+  names3d        = 'uvel  ','vvel  ','so    ','thetao','tke   ','diss  ','avv   '       ! names of 3d variables of the restart file (order is important)
+  nc_3d          = 0       ,0       ,1       ,1       ,1       ,0       ,0              ! which 3d parameters (set them to 1) to output to netcdf files, otherwise 0
+  names2d        = 'z     ','icet  ','icec  ','ice3  ','tsnei ','ueis  ','veis  ','tsoil ','iota  '  ! names of 2d variables of the restart file (order is important) 
+  nc_2d          = 1       ,1       ,1       ,0       ,0       ,0       ,0       ,1       ,0         ! which 2d parameters (set them to 1) to output netcdf
+  nc_domains     = 0, 1, 1, 0                        ! which domains to write to NetCDF (order and number of domains is from HBM cfg.nml)
+  mod_restart    = .false.                           ! if to read and interpolate from NetCDF files and write output restart file
+  mod_arxive     = .true.                            ! True if reading CMEMS monthly means, False if reading from generated NetCDF created by this rwRestart utility
+  mod_fname_1    = '/net/isilon/ifs/arch/home/jis/CMEMS_MYP/'  ! first part of path or filename for reading NetCDF
+  mod_fname_2    = '/BALTICSEA_MULTIYEAR_PHY_003_011-TDS_'     ! second part of path or filename for reading NetCDF (not used if mod_arxive is false)
+  mod_fname_3    = '.nc','.nc','.nc','.nc'                     ! last part of filename for reading NetCDF for each domain, each domain can have different NetCDF file
+  mod_domains    = 0, 1, 0, 0                                  ! for which domains to apply interpolation from input NetCDF to restart file, this should be subset of nc_domains variable
+  mod_3dparams   = 0       ,0       ,1       ,1       ,0       ,0       ,0   ! which 3d parameters to modify from input NetCDF in resart file (should be subset of nc_3d)
+  mod_2dparams   = 0       ,0       ,0       ,0       ,0       ,0       ,0       ,0       ,0   ! which 2d parameters to modify from input NetCDF in resart file (should be subset of nc_2d)
+  mod_mindep     = 40.   ! minimal depth for applying input NetCDF interpolation to output restart file for 3d variables. 2d variables do not use this restriction
+  mod_change     = 0.3   ! parameter in range from 0 (no change)  to 1 (maximal change):  u_new=u_old*(1-mod_change)+u_netcdf*mod_change
+  time_default   = 'V201411.300'         ! default output file header if creating restart from scratch and the read_restart is false
+  iotamodel      = .true.   ! if iotamodel is included in HBM options (additional fields in restart files)
+  sfill          = 12.      ! default salinity value if not available neither from input restart file or input NetCDF
+  tfill          = 4.       ! default temperature value if not available neither from input restart file or input NetCDF                   
+/
+
+In order to transform restart file from one HBM setup to another HBM setup (reading and writing namelist examples are included):
+1) run the utility in run directory of the first setup with read_restart=True, create_nc=True, nc_3d all to 1, nc_2d all to 1, nc_domains all to 1, mod_restart=False,
+2) copy the created NetCDF files to the run directory of the second setup,
+3) run the utility in run directory of the second setup with read_restart=(True if some valid restart file of the new setup is available, otherwise put as False), create_nc=False, nc_3d all to 1, nc_2d all to 1, nc_domains all to 1, mod_restart=True, mod_arxive=False, mod_fname_1=(the same as was used for writing in nc_sname), mod_fname_3=(file ending of for each domain), mod_domains all to 1, mod_3dparams all to 1, mod_2dparams all to 1, mod_mindep=-1 (to modify all depth levels), mod_change=1 (to force maximal information from restart file of the old setup), time_default set to desired date (will be applied only if read_restart=False). names_3d and names_2d should be the same as in writing.
+
+If using create_nc and mod_restart options at the same time, then the output NetCDF file will contain 3 time steps:
+0-hour time step: that what is read from input restart file,
+1-hour time step: that what is interpolated from input NetCDF files,
+2-hour time step: that what is written to output restart file
